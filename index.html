@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbase チャットボット</title>
+    <!--
+        ウェブページ全体の基本的なスタイルを設定します。
+        フォント、マージン、背景色などを定義し、チャットボットを中央に配置します。
+    -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif; /* Google FontsのInterフォントを使用 */
+            margin: 0; /* bodyのデフォルトマージンをリセット */
+            display: flex; /* Flexboxを使用してコンテンツを中央に配置 */
+            justify-content: center; /* 水平方向の中央揃え */
+            align-items: center; /* 垂直方向の中央揃え */
+            min-height: 100vh; /* ビューポートの高さ全体を使用 */
+            background-color: #f0f2f5; /* やや明るいグレーの背景色 */
+            padding: 20px; /* 全体的なパディング */
+            box-sizing: border-box; /* パディングとボーダーを幅に含める */
+        }
+
+        /*
+            チャットボットを囲むコンテナのスタイルを設定します。
+            これにより、チャットボットが明確な枠内に表示され、見た目が整います。
+        */
+        .chatbot-container {
+            width: 100%; /* 親要素の幅いっぱいに広がる */
+            max-width: 600px; /* 最大幅を設定して、大きな画面での過度な拡大を防ぐ */
+            height: 700px; /* コンテナの固定高さ */
+            border: 1px solid #e0e0e0; /* 薄いグレーのボーダー */
+            border-radius: 12px; /* 角を丸くする */
+            overflow: hidden; /* コンテナからはみ出すコンテンツを隠す */
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); /* 柔らかい影を追加 */
+            background-color: #ffffff; /* 白い背景 */
+            display: flex; /* Flexboxを使用して内部コンテンツを配置 */
+            flex-direction: column; /* 垂直方向に要素を並べる */
+            position: relative; /* 内部の絶対配置要素の基準となる */
+        }
+
+        /*
+            Chatbaseのスクリプトによって埋め込まれるiframeや要素のスタイルを調整する場合があります。
+            通常、Chatbaseのスクリプトが自動的に適切なサイズに調整しますが、
+            必要に応じてここで調整できます。
+        */
+        .chatbot-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none; /* iframeのデフォルトボーダーを削除 */
+        }
+
+        /* Google FontsのInterを読み込む */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+    </style>
+</head>
+<body>
+    <!--
+        チャットボットの埋め込みコードを配置するためのコンテナです。
+        このコンテナのスタイルが、チャットボットの表示領域を決定します。
+    -->
+    <div class="chatbot-container">
+        <!--
+            Chatbaseから提供されたJavaScript埋め込みコードです。
+            このスクリプトが実行されると、Chatbaseのチャットボットウィジェットが
+            このHTMLページにロードされ、表示されます。
+            スクリプトはページのロードが完了した後に実行されるように設定されています。
+        -->
+        <script>
+            (function(){
+                // Chatbaseが既に初期化されているか、またはグローバルオブジェクトが存在しない場合
+                if(!window.chatbase || window.chatbase("getState") !== "initialized"){
+                    // chatbase関数を定義（引数をキューに格納）
+                    window.chatbase = (...arguments) => {
+                        if(!window.chatbase.q){
+                            window.chatbase.q = []; // キューが存在しない場合は作成
+                        }
+                        window.chatbase.q.push(arguments); // 引数をキューに追加
+                    };
+                    // Proxyを使用して、chatbaseオブジェクトへのアクセスをインターセプト
+                    window.chatbase = new Proxy(window.chatbase, {
+                        get(target, prop){
+                            if(prop === "q"){
+                                return target.q; // キューへのアクセスを許可
+                            }
+                            // その他のプロパティへのアクセスは関数呼び出しとして処理
+                            return (...args) => target(prop, ...args);
+                        }
+                    });
+                }
+
+                // ページのロード完了時にChatbaseの埋め込みスクリプトを読み込む関数
+                const onLoad = function(){
+                    const script = document.createElement("script"); // 新しいscript要素を作成
+                    script.src = "https://www.chatbase.co/embed.min.js"; // Chatbaseの埋め込みスクリプトのURL
+                    script.id = "RkiK4BDJ6q7yGt0VNd4sw"; // チャットボットのID
+                    script.domain = "www.chatbase.co"; // ドメイン（セキュリティのため）
+                    document.body.appendChild(script); // bodyの最後にスクリプトを追加
+                };
+
+                // ドキュメントの読み込み状態を確認し、適切にスクリプトをロード
+                if(document.readyState === "complete"){
+                    onLoad(); // 既に読み込みが完了している場合はすぐに実行
+                } else {
+                    window.addEventListener("load", onLoad); // そうでなければloadイベントを待つ
+                }
+            })();
+        </script>
+    </div>
+</body>
+</html>
